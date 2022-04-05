@@ -1,4 +1,4 @@
-,Year,Country,CODE,QualityOfLife,PurchasingPower,Safety,HealthCare,CostOfLiving,PropertyPriceToIncome,TrafficCommuteTime,Pollution,Climate
+,Year,Country,CODE,Quality_Of_Life,Purchasing_Power,Safety,Health_Care,Cost_Of_Living,Property_Price_To_Income,Traffic_Commute_Time,Pollution,Climate
 0,2017, Austria,AUT,195.78,98.5,78.19,81.05,68.59,13.68,25.55,18.97,75.37
 1,2017, Belarus,BLR,119.58,36.44,78.65,58.88,34.73,18.8,27.96,42.27,20.07
 2,2017, Belgium,BEL,148.19,95.8,45.48,77.17,75.85,7.49,32.86,64.96,77.32
