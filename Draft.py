@@ -62,10 +62,10 @@ country_options = [dict(label=country.replace('_', ' '), value=country) for coun
 
 country_options_pie = [dict(label=country, value=country) for country in country_list]
 
-indicator_options = ['Quality_Of_Life', 'Purchasing_Power', 'Safety', 'Health_Care', 'Cost_Of_Living', 'Property_Price_To_Income',
+indicator_names = ['Quality_Of_Life', 'Purchasing_Power', 'Safety', 'Health_Care', 'Cost_Of_Living', 'Property_Price_To_Income',
                      'Traffic_Commute_Time', 'Pollution', 'Climate']
 
-indicator_names = [dict(label=indicator.replace('_', ' '), value=indicator) for indicator in indicator_options]
+indicator_options = [dict(label=indicator.replace('_', ' '), value=indicator) for indicator in indicator_names]
 
 groups = ['Male', 'Female', 'Total']
 
@@ -80,7 +80,7 @@ year_options = [dict(label = year, value =year) for year in years]
 dropdown_country = dcc.Dropdown(
         id='country_drop',
         options=country_options,
-        value=['Portugal', 'Spain'],
+        value=['Portugal', 'Spain', 'France', 'Germany'],
         multi=True
 )
 #
@@ -110,7 +110,7 @@ radio_indicator = dcc.RadioItems(
 dropdown_country1 = dcc.Dropdown(
         id='country_drop1',
         options=country_options_pie,
-        value=['Austria'],
+        value='Austria',
         multi=False
 )
 
@@ -124,7 +124,7 @@ dropdown_year = dcc.Dropdown(
 dropdown_country2 = dcc.Dropdown(
         id='country_drop2',
         options=country_options_pie,
-        value=['Portugal'],
+        value='Portugal',
         multi=False
 )
 
@@ -132,6 +132,20 @@ dropdown_year1 = dcc.Dropdown(
         id='year_drop1',
         options=year_options,
         value=2016,
+        multi=False
+)
+
+dropdown_country1 = dcc.Dropdown(
+        id='country_drop1',
+        options=country_options_pie,
+        value='Austria',
+        multi=False
+)
+
+dropdown_indicator = dcc.Dropdown(
+        id='indicator_drop',
+        options=indicator_options,
+        value='Purchasing_Power',
         multi=False
 )
 
@@ -166,15 +180,6 @@ app.layout = html.Div([
         html.Label('Choose the Indicator', style = {'fontsize': '14'}),
         radio_indicator,
         html.Br(),
-        html.Button('Search', id='button' ,
-                    style={'text-align':'center',
-                       'display': 'block',
-                       'background-color': '#008CBA',
-                       'color' : 'White',
-                       'font-size': '13px',
-                     #  'padding': '7px 20px',
-                       'width': '50%'
-                                                   })
         ], id='Iteraction', style={'width': '20%','boxShadow': '#e3e3e3 4px 4px 2px',
                                                         'border-radius': '10px',
                                                         'backgroundColor': '#add8e6',
@@ -252,74 +257,64 @@ app.layout = html.Div([
 
     html.Div([
         html.Div([
+        html.Div([
+            dcc.Graph(id='bar_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                             'border-radius': '10px',
+                                             'backgroundColor': '#add8e6',
+                                             'padding': '.1rem',
+                                             'marginLeft': '0.5rem',
+                                             'marginRight': '0.5rem',
+                                             'marginTop': '0.5rem',
+                                             'color': 'Black',
+                                             'padding-left': '2%',
+                                             'padding-right': '2%',
+                                             'padding-top': '2%'}),
+            ], id='Map2', className='pretty_box'),
+           ], id='Iteraction1', style={'width':'40%'}, className='pretty_box'),
+
+        html.Div([
         html.Label('Choose your Country'),
         dropdown_country,
         html.Br(),
-           ], id='Iteraction1', style={'width': '20%','boxShadow': '#e3e3e3 4px 4px 2px',
-                                                        'border-radius': '10px',
-                                                        'backgroundColor': '#add8e6',
-                                                        'padding':'.1.5rem',
-                                                        'marginLeft':'1rem',
-                                                        'marginRight':'1rem',
-                                                        'marginTop': '1rem',
-                                                        'height': '40%',
-                                                       'color': 'Black',
-                                                       'padding-left': '1%',
-                                                       'padding-right': '1%',
-                                                       'padding-top': '2%'
-                                                       }, className='pretty_box'),
-
-        html.Div([
-        html.Div([
-        dcc.Graph(id='graph_space57', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                    'border-radius': '10px',
-                                                    'backgroundColor': '#add8e6',
-                                                    'padding':'.1.5rem',
-                                                    'marginLeft':'0.5rem',
-                                                    'marginRight':'0.5rem',
-                                                    'marginTop': '1rem',
-                                                    'color': 'Black',
-                                                    'padding-left': '2%',
-                                                    'padding-right': '2%',
-                                                    'padding-top': '2%'}),
-            ], id='Map2', className='pretty_box'),
-            ], id='Else1', style={'width': '45%'}),
+        html.Label('Choose the second Indicator'),
+        dropdown_indicator,
+        html.Br(),
+            ], id='Else1', style={'width': '20%',   'boxShadow': '#e3e3e3 4px 4px 2px',
+                                                     'border-radius': '10px',
+                                                     'backgroundColor': '#add8e6',
+                                                     'padding': '.1 rem',
+                                                     'marginLeft': '0.5rem',
+                                                     'marginRight': '0.5rem',
+                                                     'marginTop': '0.5rem',
+                                                     'color': 'Black',
+                                                     'padding-left': '2%',
+                                                     'padding-right': '2%',
+                                                     'padding-top': '2%'}),
 
         html.Div([
             html.Div([
-            dcc.Graph(id='bar_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                'border-radius': '10px',
-                                                'backgroundColor': '#add8e6',
-                                                'padding':'.1.5rem',
-                                                'marginLeft':'1rem',
-                                                'marginRight':'1rem',
-                                                'marginTop': '1rem',
-                                                'color': 'Black',
-                                                'padding-left': '2%',
-                                                'padding-right': '2%',
-                                                'padding-top': '2%'}),
+            dcc.Graph(id='scatterplot_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                                     'border-radius': '10px',
+                                                     'backgroundColor': '#add8e6',
+                                                     'padding': '.1 rem',
+                                                     'marginLeft': '0.5rem',
+                                                     'marginRight': '0.5rem',
+                                                     'marginTop': '0.5rem',
+                                                     'color': 'Black',
+                                                     'padding-left': '2%',
+                                                     'padding-right': '2%',
+                                                     'padding-top': '2%'})
             ], id='Map3', className='pretty_box'),
-            ], id='Else2', style={'width': '45%'}),
+            ], id='Else2', style={'width': '40%'}),
         ], id='4th row', style={'display': 'flex'}),
 
+         html.Div([
+        html.H1('Indicators related to Quality of Life', style={"background-color": "#096484",
+                                            'color': 'White', 'text-align': 'center'})
+    ], id='11th row', style={'width': '60%', 'padding-left': '20%', 'padding-right': '20%'},
+        className='pretty_box'),
+
         html.Div([
-        html.Div([
-            html.Label('Choose your Group'),
-            radio_group,
-            html.Br(),
-               ], id='Iteraction54', style={'width': '10%','boxShadow': '#e3e3e3 4px 4px 2px',
-                                                        'border-radius': '10px',
-                                                        'backgroundColor': '#add8e6',
-                                                        'padding':'.1.5rem',
-                                                        'marginLeft':'0.5rem',
-                                                        'marginRight':'0.5rem',
-                                                        'marginTop': '1rem',
-                                                        'height': '40%',
-                                                       'color': 'Black',
-                                                       'padding-left': '1%',
-                                                       'padding-right': '1%',
-                                                       'padding-top': '2%'
-                                                       }, className='pretty_box'),
         html.Div([
             html.Div([
                 dcc.Graph(id='aggregate_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
@@ -336,9 +331,33 @@ app.layout = html.Div([
             ], id='Map34', className= 'pretty_box'),
                 ], id='Else98', style={'width': '40%'}),
 
+            html.Div([
+                html.Label('Choose your Group'),
+                radio_group,
+                html.Br(),
+            ], id='Iteraction54', style={'width': '20%', 'boxShadow': '#e3e3e3 4px 4px 2px',
+                                         'border-radius': '10px',
+                                         'backgroundColor': '#add8e6',
+                                         'padding': '.1.5rem',
+                                         'marginLeft': '0.5rem',
+                                         'marginRight': '0.5rem',
+                                         'marginTop': '1rem',
+                                         'height': '40%',
+                                         'color': 'Black',
+                                         'padding-left': '1%',
+                                         'padding-right': '1%',
+                                         'padding-top': '2%'
+                                         }, className='pretty_box'),
+
         html.Div([
                 html.Div([
-                dcc.Graph(id='scatterplot_graph'),
+                dcc.Graph(id='bubble_graph', className='pretty_box', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                                             'border-radius': '10px',
+                                                             'backgroundColor': '#add8e6',
+                                                             'padding': '.1.5rem',
+                                                             'marginLeft': '1rem',
+                                                             'marginRight': '1rem',
+                                                             'marginTop': '1rem'}),
                 ], id='Map1864', className='pretty_box', style={'boxShadow': '#e3e3e3 4px 4px 2px',
                                                              'border-radius': '10px',
                                                              'backgroundColor': '#add8e6',
@@ -347,20 +366,6 @@ app.layout = html.Div([
                                                              'marginRight': '1rem',
                                                              'marginTop': '1rem'}),
                 ], id='Else6347', style={'width': '40%'}),
-        html.Div([
-            ], id='Iteraction78', style={'width': '10%', 'boxShadow': '#e3e3e3 4px 4px 2px',
-                                    'border-radius': '10px',
-                                    'backgroundColor': '#add8e6',
-                                    'padding': '.1.5rem',
-                                    'marginLeft': '0.5rem',
-                                    'marginRight': '0.5rem',
-                                    'marginTop': '1rem',
-                                    'height': '40%',
-                                    'color': 'Black',
-                                    'padding-left': '1%',
-                                    'padding-right': '1%',
-                                    'padding-top': '2%'
-                                    }, className='pretty_box'),
             ], id='5th row', style={'display': 'flex'}),
 
         html.Div([
@@ -393,39 +398,11 @@ app.layout = html.Div([
                                                'padding-right': '2%',
                                                'padding-top': '2%'}),
             ], id='Map12', className= 'pretty_box'),
-                ], id='Else48', style={'width': '40%'}),
+                ], id='Else48', style={'width': '80%'}),
 
         html.Div([
-                html.Div([
-                    dcc.Graph(id='bubble_graph', className='pretty_box', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                             'border-radius': '10px',
-                                                             'backgroundColor': '#add8e6',
-                                                             'padding': '.1.5rem',
-                                                             'marginLeft': '1rem',
-                                                             'marginRight': '1rem',
-                                                             'marginTop': '1rem'}),
-                ], id='Map10', className='pretty_box',style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                        'border-radius': '10px',
-                                                        'backgroundColor': '#add8e6',
-                                                        'padding':'.1.5rem',
-                                                        'marginLeft':'0.5rem',
-                                                        'marginRight':'0.5rem',
-                                                        'marginTop': '1rem'}),
-                ], id='Else854', style={'width': '40%'}),
-        html.Div([
-            ], id='IteractionA', style={'width': '10%', 'boxShadow': '#e3e3e3 4px 4px 2px',
-                                    'border-radius': '10px',
-                                    'backgroundColor': '#add8e6',
-                                    'padding': '.1.5rem',
-                                    'marginLeft': '0.5rem',
-                                    'marginRight': '0.5rem',
-                                    'marginTop': '1rem',
-                                    'height': '40%',
-                                    'color': 'Black',
-                                    'padding-left': '1%',
-                                    'padding-right': '1%',
-                                    'padding-top': '2%'
-                                    }, className='pretty_box'),
+
+                ], id='Else854', style={'width': '10%'}),
             ], id='6th row', style={'display': 'flex'}),
 
     html.Div([
@@ -456,14 +433,14 @@ app.layout = html.Div([
                                                        }, className='pretty_box'),
         html.Div([
             html.Div([
-            dcc.Graph(id='pie_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                        'border-radius': '10px',
-                                        'backgroundColor': '#add8e6',
-                                   #     'padding':'.1rem',
-                                    #    'marginLeft':'1rem',
-                                     #   'marginRight':'1rem',
-                                        'marginTop': '1rem'
-                                    }),
+                dcc.Graph(id='pie_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                                 'border-radius': '10px',
+                                                 'backgroundColor': '#add8e6',
+                                                 #     'padding':'.1rem',
+                                                  #   'marginLeft':'1rem',
+                                                  #  'marginRight':'1rem',
+                                                     'marginTop': '1rem'
+                                                 }),
             ], id='Map4', className= 'pretty_box'),
                 ], id='Else3', style={'width': '40%'}),
 
@@ -520,7 +497,6 @@ app.layout = html.Div([
         Output ("pie_graph1", "figure"),
     ],
     [
-  #     Input("year_slider", "value"),
         Input('radio_year', "value"),
         Input("radio_indicator", "value"),
         Input("country_drop", "value"),
@@ -529,11 +505,12 @@ app.layout = html.Div([
         Input("year_drop", "value"),
         Input("country_drop2", "value"),
         Input("year_drop1", "value"),
+        Input("indicator_drop", "value"),
         #State("indicator_drop", "value")
     ]
 )
 
-def plots(year, indicator, countries, groups,country1, year1, country2, year2):
+def plots( year, indicator, countries, groups,country1, year1, country2, year2, indicator2):
     ############################################First Plot - Bar##########################################################
     data_bar = []
     for country in countries:
@@ -544,15 +521,14 @@ def plots(year, indicator, countries, groups,country1, year1, country2, year2):
 
         data_bar.append(dict(type='bar', x=x_bar, y=y_bar, name=country))
 
-    layout_bar = dict(title=dict(text='Indicator ' + str(indicator.replace('_', ' ')) + ' between 2016 and 2020',
+    layout_bar = dict(title=dict(text='Indicator ' + str(indicator.replace('_', ' ')),
                                  x = .5),
                       title_font_size=15,
                       yaxis=dict(title='Value'),
                       xaxis=dict(title='Year'),
                       paper_bgcolor='#add8e6',
                       plot_bgcolor='#add8e6',
-
-                      )
+                                         )
 
     #############################################Second Plot - Choropleth######################################################
 
@@ -634,28 +610,39 @@ def plots(year, indicator, countries, groups,country1, year1, country2, year2):
 
                       )
 
-############################################ Forth Plot - Scatter (Poverty, Crime) ###################
+############################################ Forth Plot - Scatter (Poverty, Crime) ################################
 
     scatterplot_list = []
 
+
     for country in countries:
-        scatterplot = scatter_df.loc[(scatter_df['Year'] == year) & (scatter_df["Countries"] == country)]
+        df_scatter = df.loc[(df['Year'] == year)]
+        df_scatter = df_scatter.loc[(df_scatter['Country'] == country)]
+
+        x_line = df_scatter[indicator2]
+
+        y_line = df_scatter[indicator]
 
         scatterplot_list.append(dict(type='scatter',
-                                     x=scatterplot["Crime"],
-                                     y=scatterplot["Poverty"],
-                                     name=country,
-                                     mode='lines+markers',
-                                     )
-                                )
+                             x=x_line,
+                             y=y_line,
+                             name=country,
+                             #      labels = dict('Group ' + str(groups)),
+                             # text = str(groups), #ADD MORE INFO HERE
+                             mode='markers',
+                             marker_size = 20
+                             )
+                        )
 
-    layout_ag = dict(title=dict(text='Comparing Crime with Poverty'),
-                     yaxis=dict(title='Poverty - thousands of persons'),
-                     xaxis=dict(title='Crime - percentage'),
-                     paper_bgcolor='#add8e6',
-                     plot_bgcolor='#add8e6',
+    layout_ag = dict(title=dict(text= str(indicator).replace('_', ' ') + ' vs '+  str(indicator2).replace('_', ' ') + ' in ' + str(year),
+                                x=.5),
+                      title_font_size=15,
+                      yaxis=dict(title=str(indicator).replace('_', ' ')),
+                      xaxis=dict(title=str(indicator2).replace('_', ' ')),
+                      paper_bgcolor='#add8e6',
+                      plot_bgcolor='#add8e6',
 
-                     )
+                      )
 
     fig_scatterplot = go.Figure(data=scatterplot_list, layout=layout_ag)
 
@@ -669,9 +656,12 @@ def plots(year, indicator, countries, groups,country1, year1, country2, year2):
     z1 = df_heatmap_final1.values
 
     data_heat = dict(type='heatmap', x=x1, y=y1, z=z1, colorscale='blues')
-    layout_heat = dict(title=dict(text='Share of Renewable Energy (Total and By Sector)'),
+    layout_heat = dict(title=dict(text='Share of Renewable Energy (Total and By Sector)',
+                                  x=.5),
+                       title_font_size=15,
                        paper_bgcolor='#add8e6',
                        plot_bgcolor='#add8e6'
+
                        )
 
     fig_heat = go.Figure(data=data_heat, layout=layout_heat)
@@ -716,8 +706,8 @@ def plots(year, indicator, countries, groups,country1, year1, country2, year2):
                                                        line_width=2)),
 
     fig_bubb.update_layout(
-        title='Poverty vs. Crime',
-
+        title= dict(text = 'Poverty vs. Crime',x=.5),
+        title_font_size=15,
         xaxis=dict(
             title='Poverty (by year)',
             # gridcolor='white',
@@ -743,21 +733,23 @@ def plots(year, indicator, countries, groups,country1, year1, country2, year2):
 
     values = df_pie[('Educational_Attainment_Level', year1)].tolist()
 
-    data_pie.append(dict(type='pie', labels = labels, values = values,  hole = 0.5))
+    data_pie.append(dict(type='pie', labels = labels, values =values, hole = 0.5))
 
     layout_pie = dict(title=dict(text='Education in ' + str(country1) + ' in ' + str(year1),
                                  x=.5,
                                  ),
+                      title_font_size=15,
                       paper_bgcolor='#add8e6',
                      plot_bgcolor = '#add8e6',
-                     legend = {'x': 0.3, 'y': 0}
-                       )
+                      legend=dict(
+                          orientation="h",
+                          yanchor="bottom",
+                          y=1.02,
+                          xanchor="right",
+                          x=1.1
+                      ))
 
     fig_pie = go.Figure(data=data_pie, layout=layout_pie)
-
-    fig_pie.update_layout(
-        margin=dict(l=50, r=50, t=50, b=50)
-                   )
 
     ############################################ Eighth Plot - Pie #############################################################
 
@@ -774,18 +766,20 @@ def plots(year, indicator, countries, groups,country1, year1, country2, year2):
     layout_pie1 = dict(title=dict(text='Education in ' + str(country2) + ' in ' + str(year2),
                                  x=.5,
                                  ),
+                       title_font_size=15,
                       paper_bgcolor='#add8e6',
                       plot_bgcolor='#add8e6',
-                      legend={'x': 0.3, 'y': 0}
-                      )
+                       legend=dict(
+                           orientation="h",
+                           yanchor="bottom",
+                           y=1.02,
+                           xanchor="right",
+                           x=1.1
+                       ))
 
     fig_pie1 = go.Figure(data=data_pie1, layout=layout_pie1)
 
-    fig_pie1.update_layout(
-        margin=dict(l=50, r=50, t=50, b=50)
-    )
 
-    #
     return  fig_choro, \
             go.Figure(data=data_bar, layout=layout_bar), \
             go.Figure(data=data_agg, layout=layout_agg), \
@@ -833,7 +827,6 @@ def indicator(year, indicator):
           # str(gas_names[2]).replace('_', ' ') + ': ' + str(value_3), \
           # str(gas_names[3]).replace('_', ' ') + ': ' + str(value_4), \
           # str(gas_names[4]).replace('_', ' ') + ': ' + str(value_5),
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
