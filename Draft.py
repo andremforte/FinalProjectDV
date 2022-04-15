@@ -141,6 +141,16 @@ dropdown_country1 = dcc.Dropdown(
         value='Austria',
         multi=False
 )
+slider_year = dcc.Slider(
+        id='year_slider',
+        min=df['Year'].min(),
+        max=df['Year'].max(),
+        marks={str(i): '{}'.format(str(i)) for i in
+                [2016, 2017, 2018, 2019, 2020]},
+        value=df['Year'].min(),
+        step=1,
+        included=False,
+    )
 
 dropdown_country3 = dcc.Dropdown(
         id='country_drop3',
@@ -156,12 +166,12 @@ dropdown_indicator = dcc.Dropdown(
         multi=False
 )
 
-dropdown_year2 = dcc.Dropdown(
-        id='year_drop2',
-        options=year_options,
-        value=2016,
-        multi=False
-)
+#dropdown_year2 = dcc.Dropdown(
+ #       id='year_drop2',
+  #      options=year_options,
+   #     value=2016,
+    #    multi=False
+#)
 #######################################################
 
 app = dash.Dash(__name__)
@@ -292,7 +302,7 @@ app.layout = html.Div([
         html.Label('Choose the second Indicator'),
         dropdown_indicator,
         html.Br(),
-            ], id='Else1', style={'width': '20%',   'boxShadow': '#e3e3e3 4px 4px 2px',
+                    ], id='Else1', style={'width': '20%',   'boxShadow': '#e3e3e3 4px 4px 2px',
                                                      'border-radius': '10px',
                                                      'backgroundColor': '#add8e6',
                                                      'padding': '.1 rem',
@@ -352,7 +362,7 @@ app.layout = html.Div([
                 dropdown_country3,
                 html.Br(),
                 html.Label('Choose the Year'),
-                dropdown_year2,
+                slider_year,
                 html.Br(),
             ], id='Iteraction54', style={'width': '20%', 'boxShadow': '#e3e3e3 4px 4px 2px',
                                          'border-radius': '10px',
@@ -477,7 +487,7 @@ app.layout = html.Div([
             html.Label('Choose the Year'),
             dropdown_year1,
             html.Br(),
-            ], id='Iteraction3', style={'width': '10%', 'boxShadow': '#e3e3e3 4px 4px 2px',
+            ], id='Iteraction3', style={'width': '10%', 'boxShadow': '#d3d3d3 4px 4px 2px',
                                     'border-radius': '10px',
                                     'backgroundColor': '#add8e6',
                                     'padding': '.1.5rem',
@@ -491,6 +501,7 @@ app.layout = html.Div([
                                     'padding-top': '2%'
                                     }, className='pretty_box'),
             ], id='8th row', style={'display': 'flex'}),
+
         ])
 
 @app.callback(
@@ -515,12 +526,12 @@ app.layout = html.Div([
         Input("year_drop1", "value"),
         Input("indicator_drop", "value"),
         Input("country_drop3", "value"),
-        Input("year_drop2", "value"),
+        Input("year_slider", "value"),
         #State("indicator_drop", "value")
     ]
 )
 
-def plots( year, indicator, countries, groups,country1, year1, country2, year2, indicator2, country3, year3):
+def plots( year, indicator, countries, groups,country1, year1, country2, year2, indicator2, country3, year4):
     ############################################First Plot - Bar##########################################################
     data_bar = []
     for country in countries:
@@ -659,7 +670,7 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
 
     ############################################ Fifth Plot - Heatmap #############################################################
 
-    df_heatmap_final = df_heatmap.loc[df_heatmap['Year'] == year3]
+    df_heatmap_final = df_heatmap.loc[df_heatmap['Year'] == year4]
 
     df_heatmap_final1 = df_heatmap_final[df_heatmap_final.columns[1:]]
 
@@ -710,7 +721,7 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
     sizeref = 2. * max(df_bubbb['size']) / (100 ** 2)
 
     for country in country3:
-        df_bubb = df_bubbb.loc[(df_bubbb['Country'] == country) & (df_bubbb['Year'] == year)]
+        df_bubb = df_bubbb.loc[(df_bubbb['Country'] == country) & (df_bubbb['Year'] == year4)]
 
         fig_bubb.add_trace(go.Scatter(
             x=df_bubb['Poverty'], y=df_bubb['Crime'],
