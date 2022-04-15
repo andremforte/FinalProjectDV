@@ -55,7 +55,7 @@ scatter_df = pd.merge(crime, poverty, on=["Year", "Countries"])
 # Energy <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 df_heatmap = pd.read_excel(path + 'ShareEnergyRenewableData.xlsx')
 
-df_heatmap.set_index('GEO/TIME', inplace = True)
+df_heatmap.set_index('GEO/TIME', inplace=True)
 
 #Preparation <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 country_options = [dict(label=country.replace('_', ' '), value=country) for country in df['Country'].unique()]
@@ -142,6 +142,13 @@ dropdown_country1 = dcc.Dropdown(
         multi=False
 )
 
+dropdown_country3 = dcc.Dropdown(
+        id='country_drop3',
+        options=country_options,
+        value=['Portugal', 'Spain', 'France', 'Germany'],
+        multi=True
+)
+
 dropdown_indicator = dcc.Dropdown(
         id='indicator_drop',
         options=indicator_options,
@@ -149,6 +156,12 @@ dropdown_indicator = dcc.Dropdown(
         multi=False
 )
 
+dropdown_year2 = dcc.Dropdown(
+        id='year_drop2',
+        options=year_options,
+        value=2016,
+        multi=False
+)
 #######################################################
 
 app = dash.Dash(__name__)
@@ -335,6 +348,12 @@ app.layout = html.Div([
                 html.Label('Choose your Group'),
                 radio_group,
                 html.Br(),
+                html.Label('Choose your Country'),
+                dropdown_country3,
+                html.Br(),
+                html.Label('Choose the Year'),
+                dropdown_year2,
+                html.Br(),
             ], id='Iteraction54', style={'width': '20%', 'boxShadow': '#e3e3e3 4px 4px 2px',
                                          'border-radius': '10px',
                                          'backgroundColor': '#add8e6',
@@ -371,19 +390,8 @@ app.layout = html.Div([
         html.Div([
         html.Div([
 
-           ], id='Iteraction34', style={'width': '10%','boxShadow': '#e3e3e3 4px 4px 2px',
-                                                        'border-radius': '10px',
-                                                        'backgroundColor': '#add8e6',
-                                                        'padding':'.1.5rem',
-                                                        'marginLeft':'0.5rem',
-                                                        'marginRight':'0.5rem',
-                                                        'marginTop': '1rem',
-                                                        'height': '40%',
-                                                       'color': 'Black',
-                                                       'padding-left': '1%',
-                                                       'padding-right': '1%',
-                                                       'padding-top': '2%'
-                                                       }, className='pretty_box'),
+           ], id='Iteraction34', style={'width': '5%',
+                                        }, className='pretty_box'),
         html.Div([
             html.Div([
                 dcc.Graph(id='heatmap', style={'boxShadow': '#e3e3e3 4px 4px 2px',
@@ -398,11 +406,11 @@ app.layout = html.Div([
                                                'padding-right': '2%',
                                                'padding-top': '2%'}),
             ], id='Map12', className= 'pretty_box'),
-                ], id='Else48', style={'width': '80%'}),
+                ], id='Else48', style={'width': '90%'}),
 
         html.Div([
 
-                ], id='Else854', style={'width': '10%'}),
+                ], id='Else854', style={'width': '5%'}),
             ], id='6th row', style={'display': 'flex'}),
 
     html.Div([
@@ -506,11 +514,13 @@ app.layout = html.Div([
         Input("country_drop2", "value"),
         Input("year_drop1", "value"),
         Input("indicator_drop", "value"),
+        Input("country_drop3", "value"),
+        Input("year_drop2", "value"),
         #State("indicator_drop", "value")
     ]
 )
 
-def plots( year, indicator, countries, groups,country1, year1, country2, year2, indicator2):
+def plots( year, indicator, countries, groups,country1, year1, country2, year2, indicator2, country3, year3):
     ############################################First Plot - Bar##########################################################
     data_bar = []
     for country in countries:
@@ -584,7 +594,7 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
 
     data_agg =[]
 
-    for country in countries:
+    for country in country3:
         df_line = table.loc[(table['Country'] == country)]
 
         x_line = df_line['Year']
@@ -630,8 +640,9 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
                              #      labels = dict('Group ' + str(groups)),
                              # text = str(groups), #ADD MORE INFO HERE
                              mode='markers',
-                             marker_size = 20
-                             )
+                             marker_size = 18,
+                             marker_symbol = '219',
+        )
                         )
 
     layout_ag = dict(title=dict(text= str(indicator).replace('_', ' ') + ' vs '+  str(indicator2).replace('_', ' ') + ' in ' + str(year),
@@ -648,20 +659,27 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
 
     ############################################ Fifth Plot - Heatmap #############################################################
 
-    df_heatmap_final = df_heatmap.loc[df_heatmap['Year'] == year]
+    df_heatmap_final = df_heatmap.loc[df_heatmap['Year'] == year3]
+
     df_heatmap_final1 = df_heatmap_final[df_heatmap_final.columns[1:]]
 
-    x1 = df_heatmap_final1.columns
-    y1 = df_heatmap_final1.index
-    z1 = df_heatmap_final1.values
+    df_heatmap_ = df_heatmap_final1.transpose()
+
+    x1 = df_heatmap_.columns
+    y1 = df_heatmap_.index
+    z1 = df_heatmap_.values
 
     data_heat = dict(type='heatmap', x=x1, y=y1, z=z1, colorscale='blues')
     layout_heat = dict(title=dict(text='Share of Renewable Energy (Total and By Sector)',
-                                  x=.5),
-                       title_font_size=15,
+                                  x =.5),
+                       autosize=True,
                        paper_bgcolor='#add8e6',
-                       plot_bgcolor='#add8e6'
-
+                       plot_bgcolor='#add8e6',
+                       yaxis=dict(title='Indicators',
+                                  ),
+                       xaxis = dict(title='Countries',
+                                    tickangle =45,
+                                    )
                        )
 
     fig_heat = go.Figure(data=data_heat, layout=layout_heat)
@@ -691,7 +709,7 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
     df_bubbb['size'] = bubble_size
     sizeref = 2. * max(df_bubbb['size']) / (100 ** 2)
 
-    for country in countries:
+    for country in country3:
         df_bubb = df_bubbb.loc[(df_bubbb['Country'] == country) & (df_bubbb['Year'] == year)]
 
         fig_bubb.add_trace(go.Scatter(
