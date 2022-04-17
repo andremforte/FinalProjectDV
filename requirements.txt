@@ -1,4 +1,5 @@
 gunicorn
+openpyxl
 plotly
 dash
 requests
