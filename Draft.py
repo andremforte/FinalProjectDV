@@ -30,28 +30,10 @@ education.set_index('Country', inplace = True)
 # Poverty, Crime and Population########################################################################################
 PCP = pd.read_csv(path + 'poverty_crime_pop.csv')
 
-# Crime and Poverty <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-crime = pd.read_excel(path + 'Crime.xlsx')
-
-crime = (crime.set_index(["TIME"])
-             .stack()
-             .reset_index(name='Crime')
-             .rename(columns={'level_1': 'Year', "TIME": "Countries"}))
-
-poverty = pd.read_excel(path + 'Poverty.xlsx')
-
-poverty = (poverty.set_index(["TIME"])
-               .stack()
-               .reset_index(name='Poverty')
-               .rename(columns={'level_1': 'Year', "TIME": "Countries"}))
-
-scatter_df = pd.merge(crime, poverty, on=["Year", "Countries"])
-
 # Energy #############################################################################################################
 df_heatmap = pd.read_excel(path + 'energy.xlsx')
 
 df_heatmap.set_index('Country', inplace=True)
-
 
 
 #2. Iteractions' Preparation #########################################################################################
@@ -177,16 +159,6 @@ app.layout = html.Div([
         html.Label('Choose the Indicator'),
         radio_indicator,
         html.Br(),
-        html.Div([
-            dcc.Link('To have more information about the formulas, click here!',
-                     href='https://www.numbeo.com/quality-of-life/indices_explained.jsp', className="tab"),
-                    ], id='Iteraction1', style = {'boxShadow': '#add8e6 4px 4px 2px',
-                                        'border-radius': '10px','backgroundColor': '#add8e6',
-                                        'padding':'1rem','marginLeft':'0.5rem',
-                                        'marginRight':'0.5rem', 'marginTop':'0.5rem',
-                                        "height": '80%','color': 'Black',
-                                        'padding-left': '1%','padding-right': '1%',
-                                        'padding-top': '1%','padding-bottom': '1%'}, className='pretty_box'),
         ], id='Iteraction3', style={'width': '20%','boxShadow': '#e3e3e3 4px 4px 2px',
                             'border-radius': '10px','backgroundColor': '#add8e6',
                             'padding':'1rem','marginLeft':'0.5rem',
@@ -397,6 +369,12 @@ app.layout = html.Div([
             html.Label('Choose the Year'),
             dropdown_year,
             html.Br(),
+            html.Tbody('Level 0-2: less than primary, primary and lower secondary; ',
+                       style={'text-align':'center', 'fontSize' : '16'}, className='pretty_box'),
+            html.Tbody('Level 3-4: upper secondary and post secondary non terciary education; ',
+                        style={'text-align': 'center', 'fontSize': '16'}, className='pretty_box'),
+            html.Tbody('Level 5-8: terciary education ',
+                       style={'text-align': 'center', 'fontSize': '16'}, className='pretty_box'),
            ], id='Iteraction16', style={'width': '10%','boxShadow': '#e3e3e3 4px 4px 2px',
                                 'border-radius': '10px','backgroundColor': '#add8e6',
                                 'padding':'.1.5rem','marginLeft':'0.5rem',
@@ -499,7 +477,7 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
                                  x = .5),
                       title_font_size=15,
                       yaxis=dict(title='Value'),
-                      xaxis=dict(title='Year'),
+                      xaxis=dict(title='Year', dtick = 'tick0'),
                       paper_bgcolor='#add8e6',
                       plot_bgcolor='#add8e6')
 
@@ -698,7 +676,7 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
 
     values1 = df_pie1[('Educational_Attainment_Level', year2)].tolist()
 
-    data_pie1.append(dict(type='pie', labels=labels1, values=values1, hole=0.5))
+    data_pie1.append(dict(type='pie', labels=labels1, values=values1,  hole=0.5))
 
     layout_pie1 = dict(title=dict(text='Education in ' + str(country2) + ' in ' + str(year2),
                                 x=.5),
