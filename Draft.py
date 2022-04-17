@@ -1,38 +1,33 @@
 import dash
 from dash import dcc
 from dash import html
-import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output, State
-import numpy as np
+from dash.dependencies import Input, Output
 import math
 import pandas as pd
 import plotly.graph_objs as go
 
 path = 'https://raw.githubusercontent.com/andremforte/FinalProjectDV/master/'
 
-#Main dataset <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-df = pd.read_excel(path + 'df_final.xlsx')
+#1. Reading and Preparing the Datasets#################################################################################
+#Quality of Life Index and Indicators Dataset #########################################################################
+df = pd.read_excel(path + 'quality_life_index.xlsx')
 
-#df.Year = df.Year.astype(str)
+#Income ###############################################################################################################
+income_total = pd.read_excel(path + 'income.xlsx')
 
-#Income <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-income_total = pd.read_excel(path + 'Income_final.xlsx', sheet_name='Income_pergroup')
+income = pd.pivot_table(income_total, index=['Group'], columns=['Country'], values=[2016, 2017, 2018, 2019, 2020])
+income = income.T
+income.reset_index(inplace=True)
+income = income.rename(columns={"level_0": "Year"})
 
-table = pd.pivot_table(income_total, index=['Group'], columns=['Country'], values=[2016, 2017, 2018, 2019, 2020])
-table = table.T
-table.reset_index(inplace=True)
-table = table.rename(columns={"level_0": "Year"})
-
-# Education <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-education = pd.read_excel(path + 'Education_final.xlsx')
+#Education ############################################################################################################
+education = pd.read_excel(path + 'education.xlsx')
 
 education = pd.pivot_table(education, index =['Level_Education', 'Country'], columns = ['Year'], values = ['Educational_Attainment_Level'])
 education.reset_index(inplace = True)
 education.set_index('Country', inplace = True)
 
-country_list = education.index.unique().tolist()
-
-# poverty_crime_pop <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# Poverty, Crime and Population########################################################################################
 PCP = pd.read_csv(path + 'poverty_crime_pop.csv')
 
 # Crime and Poverty <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -52,95 +47,85 @@ poverty = (poverty.set_index(["TIME"])
 
 scatter_df = pd.merge(crime, poverty, on=["Year", "Countries"])
 
-# Energy <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-df_heatmap = pd.read_excel(path + 'ShareEnergyRenewableData.xlsx')
+# Energy #############################################################################################################
+df_heatmap = pd.read_excel(path + 'energy.xlsx')
 
-df_heatmap.set_index('GEO/TIME', inplace=True)
+df_heatmap.set_index('Country', inplace=True)
 
-#Preparation <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+#2. Iteractions' Preparation #########################################################################################
+
 country_options = [dict(label=country.replace('_', ' '), value=country) for country in df['Country'].unique()]
 
+country_list = education.index.unique().tolist()
 country_options_pie = [dict(label=country, value=country) for country in country_list]
 
-indicator_names = ['Quality_Of_Life', 'Purchasing_Power', 'Safety', 'Health_Care', 'Cost_Of_Living', 'Property_Price_To_Income',
-                     'Traffic_Commute_Time', 'Pollution', 'Climate']
-
+indicator_names = ['Quality_Of_Life', 'Purchasing_Power', 'Safety', 'Health_Care', 'Cost_Of_Living',
+                   'Property_Price_To_Income', 'Traffic_Commute_Time', 'Pollution', 'Climate']
 indicator_options = [dict(label=indicator.replace('_', ' '), value=indicator) for indicator in indicator_names]
 
 groups = ['Male', 'Female', 'Total']
-
 group_options = [dict(label = group, value =group) for group in groups]
 
 years = [2016, 2017, 2018, 2019, 2020]
-
 year_options = [dict(label = year, value =year) for year in years]
 
-#<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#3. Dropdowns, Sliders and RadioItems ################################################################################
 
 dropdown_country = dcc.Dropdown(
         id='country_drop',
         options=country_options,
         value=['Portugal', 'Spain', 'France', 'Germany'],
-        multi=True
-)
-#
+        multi=True)
+
 radio_group = dcc.RadioItems(
         id='radio_group',
         options= group_options,
-        value='Total',
-        labelStyle={'display': 'block'},
-   )
-#
+        value='Total')
 
 radio_year = dcc.RadioItems(
         id='radio_year',
         options=year_options,
         value=2016,
-        labelStyle={'display': 'block'}
-
-)
+        labelStyle={'display': 'block'})
 
 radio_indicator = dcc.RadioItems(
         id='radio_indicator',
         options= indicator_options,
         value='Quality_Of_Life',
-        labelStyle={'display': 'block'}
-   )
+        labelStyle={'display': 'block'})
 
 dropdown_country1 = dcc.Dropdown(
         id='country_drop1',
         options=country_options_pie,
         value='Austria',
-        multi=False
-)
+        multi=False)
 
 dropdown_year = dcc.Dropdown(
         id='year_drop',
         options=year_options,
         value=2016,
-        multi=False
-)
+        multi=False)
 
 dropdown_country2 = dcc.Dropdown(
         id='country_drop2',
         options=country_options_pie,
         value='Portugal',
-        multi=False
-)
+        multi=False)
 
 dropdown_year1 = dcc.Dropdown(
         id='year_drop1',
         options=year_options,
         value=2016,
-        multi=False
-)
+        multi=False)
 
 dropdown_country1 = dcc.Dropdown(
         id='country_drop1',
         options=country_options_pie,
         value='Austria',
-        multi=False
-)
+        multi=False)
+
 slider_year = dcc.Slider(
         id='year_slider',
         min=df['Year'].min(),
@@ -149,30 +134,22 @@ slider_year = dcc.Slider(
                 [2016, 2017, 2018, 2019, 2020]},
         value=df['Year'].min(),
         step=1,
-        included=False,
-    )
+        included=False)
 
 dropdown_country3 = dcc.Dropdown(
         id='country_drop3',
         options=country_options,
         value=['Portugal', 'Spain', 'France', 'Germany'],
-        multi=True
-)
+        multi=True)
 
 dropdown_indicator = dcc.Dropdown(
         id='indicator_drop',
         options=indicator_options,
         value='Purchasing_Power',
-        multi=False
-)
+        multi=False)
 
-#dropdown_year2 = dcc.Dropdown(
- #       id='year_drop2',
-  #      options=year_options,
-   #     value=2016,
-    #    multi=False
-#)
-#######################################################
+
+#4. Dashboard #########################################################################################################
 
 app = dash.Dash(__name__)
 
@@ -180,253 +157,237 @@ server = app.server
 
 app.layout = html.Div([
     html.Div([
-        html.H1('Quality of Life Dashboard', style={"background-color": "#096484",
-            'color' : 'White', 'text-align':'center'})
-    ], id='1st row', style={'width': '60%','padding-left':'20%', 'padding-right':'20%'}, className='pretty_box'),
+        html.H1('Quality of Life Dashboard', style={"background-color": "#096484", 'color': 'White',
+                                                    'text-align':'center'})],
+        id='1st row', style={'width': '60%','padding-left':'20%', 'padding-right':'20%'}, className='pretty_box'),
     html.Div([
-        html.H3('Dashboard presenting the European Life Quality Index and its indicators and subindicators between 2016 and 2020',
-                style={'text-align':'center',
-                        'border': '2px solid #add8e6',
-                        'color' : 'black',
-                        "height": "15%",
-                       'display': 'block',
-                       'width': '90%',
-                       'padding-left':'5%',
-                       'padding-right':'5%'
-                                                })
+        html.H3('Dashboard presenting the European Life Quality Index and its indicators and '
+                'subindicators between 2016 and 2020', style={'text-align':'center',
+                                                              'border': '2px solid #add8e6',
+                                                              'color' : 'black', "height": "15%",
+                                                              'display': 'block', 'width': '90%',
+                                                              'padding-left':'5%',
+                                                              'padding-right':'5%'})
     ], id='2nd row', className='pretty_box', style={'width': '84%','padding-left':'8%', 'padding-right':'8%'}),
     html.Div([
         html.Div([
         html.Label('Choose the Year'),
         radio_year,
         html.Br(),
-        html.Label('Choose the Indicator', style = {'fontsize': '14'}),
+        html.Label('Choose the Indicator'),
         radio_indicator,
         html.Br(),
-        ], id='Iteraction', style={'width': '20%','boxShadow': '#e3e3e3 4px 4px 2px',
-                                                        'border-radius': '10px',
-                                                        'backgroundColor': '#add8e6',
-                                                        'padding':'1rem',
-                                                        'marginLeft':'0.5rem',
-                                                        'marginRight':'0.5rem',
-                                                        'marginTop':'0.5rem',
-                                                        "height": '80%',
-                                                       'color': 'Black',
-                                                       'padding-left': '1%',
-                                                       'padding-right': '1%',
-                                                       'padding-top': '1%',
-                                                       'padding-bottom': '1%'
-                                                       }, className='pretty_box'),
+        html.Div([
+            dcc.Link('To have more information about the formulas, click here!',
+                     href='https://www.numbeo.com/quality-of-life/indices_explained.jsp', className="tab"),
+                    ], id='Iteraction1', style = {'boxShadow': '#add8e6 4px 4px 2px',
+                                        'border-radius': '10px','backgroundColor': '#add8e6',
+                                        'padding':'1rem','marginLeft':'0.5rem',
+                                        'marginRight':'0.5rem', 'marginTop':'0.5rem',
+                                        "height": '80%','color': 'Black',
+                                        'padding-left': '1%','padding-right': '1%',
+                                        'padding-top': '1%','padding-bottom': '1%'}, className='pretty_box'),
+        ], id='Iteraction3', style={'width': '20%','boxShadow': '#e3e3e3 4px 4px 2px',
+                            'border-radius': '10px','backgroundColor': '#add8e6',
+                            'padding':'1rem','marginLeft':'0.5rem',
+                            'marginRight':'0.5rem','marginTop':'0.5rem',
+                            "height": '80%','color': 'Black',
+                            'padding-left': '1%','padding-right': '1%',
+                            'padding-top': '1%','padding-bottom': '1%'}, className='pretty_box'),
 
     html.Div([
         html.Div([
-        dcc.Graph(id='choropleth'),
-        ], id='Map', className='pretty_box', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                    'border-radius': '10px',
-                                                    'backgroundColor': '#add8e6',
-                                                    'padding':'1rem',
-                                                    'marginLeft':'0.5rem',
-                                                    'marginRight':'0.5rem',
-                                                    'marginTop':'0.5rem',
-                                                    'color': 'Black',
-                                                    'padding-left': '1%',
-                                                    'padding-right': '1%',
-                                                    'padding-top': '1%'
-                                                    }),
-    ], id='Else', style={'width': '60%'}),
+        dcc.Graph(id='choropleth')], id='Map', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                              'border-radius': '10px','backgroundColor': '#add8e6',
+                                              'padding':'1rem','marginLeft':'0.5rem',
+                                              'marginRight':'0.5rem','marginTop':'0.5rem',
+                                              'color': 'Black','padding-left': '1%',
+                                              'padding-right': '1%','padding-top': '1%'}, className='pretty_box'),
+    ], id='Box1', style={'width': '60%'}),
 
     html.Div([
-    html.Div([
-    html.H3('Mean Value', style={"background-color": "#add8e6",
-            'color' : '#096484', 'text-align':'center', 'marginLeft':'0.2rem',
-                                                        'marginRight':'0.2rem',
-                                                        'marginTop':'0.2rem',
-                                                       'padding-left': '0.5%',
-                                                       'padding-right': '0.5%',
-                                                       'padding-top': '0.5%',
-                                                       'padding-bottom': '0.5%'}),
-    html.Tbody(id='kpi1', style={'text-align':'center'}, className='pretty_box')]),
+        html.Div([
+        html.H3('Mean Value', style={"background-color": "#add8e6",'color' : '#096484',
+                              'text-align':'center', 'marginLeft':'0.2rem',
+                              'marginRight':'0.2rem','marginTop':'0.2rem',
+                              'padding-left': '0.5%','padding-right': '0.5%',
+                              'padding-top': '0.5%','padding-bottom': '0.5%'}),
+
+        html.Tbody(id='info1', style={'text-align':'center'}, className='pretty_box')]),
 
     html.Div([
-    html.H3('Change Rate', style={"background-color": "#add8e6",
-            'color' : '#096484', 'text-align':'center'}),
-    html.Tbody(id='kpi2', style={'text-align':'center', 'fontSize' : '16'}, className='pretty_box')]),
+        html.H3('Change Rate', style={"background-color": "#add8e6",'color' : '#096484', 'text-align':'center'}),
+
+        html.Tbody(id='info2', style={'text-align':'center', 'fontSize' : '16'}, className='pretty_box')]),
 
     html.Div([
-    html.H3('Information', style={"background-color": "#add8e6",
-            'color' : '#096484', 'text-align':'center'}),
-    html.Tbody("Quality of Life Index (higher is better) is an estimation of overall quality of life "
-            "by using an empirical formula which takes into account purchasing power (higher is better)," 
-            "pollution (lower is better), house price to income (lower is better), cost of living " 
-            "lower is better), safety (higher is better), health care (higher is better), "
-            " traffic commute time (lower is better) and climate (higher is better) indices.",
-             style={'text-align':'center', 'fontSize' : '10'}, className='pretty_box')]),
+        html.H3('Information', style={"background-color": "#add8e6",'color' : '#096484', 'text-align':'center'}),
 
-                      ], id='IteractionX', style={'width': '20%','boxShadow': '#e3e3e3 4px 4px 2px',
-                                                        'border-radius': '10px',
-                                                        'backgroundColor': '#add8e6',
-                                                        'padding':'1rem',
-                                                        'marginLeft':'0.5rem',
-                                                        'marginRight':'0.5rem',
-                                                        'marginTop':'0.5rem',
-                                                    "height": "80%",
-                                                       'color': 'Black',
-                                                       'padding-left': '1%',
-                                                       'padding-right': '1%',
-                                                       'padding-top': '1%',
-                                                       'padding-bottom': '1%'
-                                                       }, className='pretty_box'),
+        html.Tbody("Quality of Life Index (higher is better) is an estimation of overall quality of life "
+                "by using an empirical formula which takes into account purchasing power (higher is better)," 
+                "pollution (lower is better), house price to income (lower is better), cost of living " 
+                "lower is better), safety (higher is better), health care (higher is better), "
+                " traffic commute time (lower is better) and climate (higher is better) indices.",
+                 style={'text-align':'center', 'fontSize' : '10'}, className='pretty_box')]),
+    ], id='Iteraction2', style={'width': '20%','boxShadow': '#e3e3e3 4px 4px 2px',
+                        'border-radius': '10px','backgroundColor': '#add8e6','padding':'1rem',
+                        'marginLeft':'0.5rem','marginRight':'0.5rem','marginTop':'0.5rem',
+                        "height": "80%",'color': 'Black', 'padding-left': '1%','padding-right': '1%',
+                        'padding-top': '1%','padding-bottom': '1%'}, className='pretty_box'),
 ], id='3nd row', style={'display': 'flex'}),
 
     html.Div([
+    html.Div([
         html.Div([
-        html.Div([
-            dcc.Graph(id='bar_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                             'border-radius': '10px',
-                                             'backgroundColor': '#add8e6',
-                                             'padding': '.1rem',
-                                             'marginLeft': '0.5rem',
-                                             'marginRight': '0.5rem',
-                                             'marginTop': '0.5rem',
-                                             'color': 'Black',
-                                             'padding-left': '2%',
-                                             'padding-right': '2%',
-                                             'padding-top': '2%'}),
-            ], id='Map2', className='pretty_box'),
-           ], id='Iteraction1', style={'width':'40%'}, className='pretty_box'),
+            dcc.Graph(id='bar_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px','border-radius': '10px',
+                                     'backgroundColor': '#add8e6','padding': '.1rem',
+                                     'marginLeft': '0.5rem','marginRight': '0.5rem',
+                                     'marginTop': '0.5rem','color': 'Black',
+                                     'padding-left': '2%','padding-right': '2%',
+                                     'padding-top': '2%'})], id='Map2', className='pretty_box'),
+           ], id='Box2', style={'width':'40%'}, className='pretty_box'),
 
+        html.Div([
         html.Div([
         html.Label('Choose your Country'),
         dropdown_country,
         html.Br(),
-        html.Label('Choose the second Indicator'),
+        ], id='Iteraction4', style={'boxShadow': '#e3e3e3 4px 4px 2px','border-radius': '10px',
+                             'backgroundColor': '#add8e6', 'padding': '.1rem',
+                             'height': '45%','marginLeft': '0.5rem','marginRight': '0.5rem',
+                             'marginTop': '0.5rem','marginBottom': '0.75rem', 'color': 'Black',
+                             'padding-left': '2%','padding-right': '2%',
+                             'padding-top': '2%'}, className='pretty_box'),
+
+        html.Div([
+        html.H4("It's important to compare two indices to have different perspectives",
+                style={'text-align':'center','border': '2px solid #096484'}, className='pretty_box'),
+        ], id = 'info3', style = {'padding': '.1rem','marginLeft': '0.5rem','marginRight': '0.5rem',
+                         'marginTop': '1rem','marginBottom': '0.3rem','color': 'Black',
+                         'padding-left': '1%','padding-right': '1%',
+                         'padding-top': '1%'}, className = 'pretty_box'),
+
+        html.Div([
+        html.Label('Select the second Indicator'),
         dropdown_indicator,
-        html.Br(),
-                    ], id='Else1', style={'width': '20%',   'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                     'border-radius': '10px',
-                                                     'backgroundColor': '#add8e6',
-                                                     'padding': '.1 rem',
-                                                     'marginLeft': '0.5rem',
-                                                     'marginRight': '0.5rem',
-                                                     'marginTop': '0.5rem',
-                                                     'color': 'Black',
-                                                     'padding-left': '2%',
-                                                     'padding-right': '2%',
-                                                     'padding-top': '2%'}),
+        html.Br(),], id='Iteraction5', style={ 'boxShadow': '#e3e3e3 4px 4px 2px','border-radius': '10px',
+                                        'backgroundColor': '#add8e6','padding': '.1 rem',
+                                        'marginLeft': '0.5rem','marginRight': '0.5rem',
+                                        'marginTop': '0.3rem','color': 'Black',
+                                        'padding-left': '2%','padding-right': '2%',
+                                        'padding-top': '2%'}),], id = 'Iteraction6', style = {'width': '20%'}),
 
         html.Div([
             html.Div([
-            dcc.Graph(id='scatterplot_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                     'border-radius': '10px',
-                                                     'backgroundColor': '#add8e6',
-                                                     'padding': '.1 rem',
-                                                     'marginLeft': '0.5rem',
-                                                     'marginRight': '0.5rem',
-                                                     'marginTop': '0.5rem',
-                                                     'color': 'Black',
-                                                     'padding-left': '2%',
-                                                     'padding-right': '2%',
-                                                     'padding-top': '2%'})
-            ], id='Map3', className='pretty_box'),
-            ], id='Else2', style={'width': '40%'}),
+                dcc.Graph(id='scatterplot_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                                 'border-radius': '10px', 'backgroundColor': '#add8e6',
+                                                 'padding': '.1 rem', 'marginLeft': '0.5rem',
+                                                 'marginRight': '0.5rem', 'marginTop': '0.5rem',
+                                                 'color': 'Black', 'padding-left': '2%',
+                                                 'padding-right': '2%','padding-top': '2%'})
+            ], id='scatter1', className='pretty_box'),
+            ], id='Box3', style={'width': '40%'}),
         ], id='4th row', style={'display': 'flex'}),
 
-         html.Div([
-        html.H1('Indicators related to Quality of Life', style={"background-color": "#096484",
-                                            'color': 'White', 'text-align': 'center'})
-    ], id='11th row', style={'width': '60%', 'padding-left': '20%', 'padding-right': '20%'},
-        className='pretty_box'),
+        html.Div([
+        html.H1('Indicators related to Quality of Life',
+                style={"background-color": "#096484",'color': 'White', 'text-align': 'center'})
+        ], id='5th row',  style={'width': '60%', 'padding-left': '20%',
+                             'padding-right': '20%'},className='pretty_box'),
 
         html.Div([
         html.Div([
             html.Div([
-                dcc.Graph(id='aggregate_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                       'border-radius': '10px',
-                                                       'backgroundColor': '#add8e6',
-                                                       'padding': '.1.5rem',
-                                                       'marginLeft': '0.5rem',
-                                                       'marginRight': '0.5rem',
-                                                       'marginTop': '1rem',
-                                                       'color': 'Black',
-                                                       'padding-left': '2%',
-                                                       'padding-right': '2%',
-                                                       'padding-top': '2%'}),
-            ], id='Map34', className= 'pretty_box'),
-                ], id='Else98', style={'width': '40%'}),
-
+             dcc.Graph(id='aggregate_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                             'border-radius': '10px','backgroundColor': '#add8e6',
+                                             'padding': '.1rem', 'marginLeft': '0.5rem',
+                                             'marginRight': '0.5rem', 'marginTop': '0.5rem',
+                                             'color': 'Black','padding-left': '1%',
+                                             'padding-right': '1%', 'padding-top': '1%'}),
+                ], id='graph', className= 'pretty_box'),
             html.Div([
-                html.Label('Choose your Group'),
-                radio_group,
-                html.Br(),
+                html.Div([
+                    html.H4("Select the group to see the differences in Income above",
+                            style={'text-align': 'center', 'border': '2px solid #096484'}, className='pretty_box')]),
+                html.Div([
+                    html.Label('Choose your Group'),
+                    radio_group,
+                    html.Br()], id='Iteraction7', style={'boxShadow': '#add8e6 4px 4px 2px',
+                                                         'border-radius': '10px', 'backgroundColor': '#add8e6',
+                                                         'padding': '.1rem', 'width': '50%',
+                                                         'color': 'Black'}, className='pretty_box'),
+            ], id='Iteraction8', style={'marginLeft': '0.5rem', 'marginRight': '0.5rem',
+                                        'color': 'Black'}, className='pretty_box'),
+            ], id='Box4', style={'width': '40%'}),
+
+        html.Div([
+        html.Div([ ], id='Space',style = {'height': '7%'}, className='pretty_box'),
+            html.Div([
+                html.H4("Select the Country to analyse income, poverty and crime",
+                        style={'text-align': 'center','border': '2px solid #096484'}
+                        , className='pretty_box'),
+            ], id='Iteraction9', style={'boxShadow': '#e3e3e3 4px 4px 2px','border-radius': '10px',
+                                 'marginLeft': '0.5rem','marginRight': '0.5rem',
+                                 'marginBottom': '0.75rem','color': 'Black'}, className='pretty_box'),
+
+                html.Div ([
                 html.Label('Choose your Country'),
                 dropdown_country3,
                 html.Br(),
-                html.Label('Choose the Year'),
-                slider_year,
-                html.Br(),
-            ], id='Iteraction54', style={'width': '20%', 'boxShadow': '#e3e3e3 4px 4px 2px',
-                                         'border-radius': '10px',
-                                         'backgroundColor': '#add8e6',
-                                         'padding': '.1.5rem',
-                                         'marginLeft': '0.5rem',
-                                         'marginRight': '0.5rem',
-                                         'marginTop': '1rem',
-                                         'height': '40%',
-                                         'color': 'Black',
-                                         'padding-left': '1%',
-                                         'padding-right': '1%',
-                                         'padding-top': '2%'
-                                         }, className='pretty_box'),
+                ], id='Iteraction10', style={'boxShadow': '#e3e3e3 4px 4px 2px','border-radius': '10px',
+                                      'backgroundColor': '#add8e6','padding': '.1rem',
+                                      'height': '45%','marginLeft': '0.5rem','marginRight': '0.5rem',
+                                      'marginTop': '0.5rem','marginBottom': '0.75rem','color': 'Black',
+                                      'padding-left': '2%','padding-right': '2%'}, className='pretty_box'),
+            ], id='Iteraction11', style={'width': '20%','padding': '.1rem','marginLeft': '0.5rem',
+                                'marginRight': '0.5rem','color': 'Black','padding-left': '.5%',
+                                'padding-right': '.5%'}, className='pretty_box'),
 
         html.Div([
                 html.Div([
-                dcc.Graph(id='bubble_graph', className='pretty_box', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                             'border-radius': '10px',
-                                                             'backgroundColor': '#add8e6',
-                                                             'padding': '.1.5rem',
-                                                             'marginLeft': '1rem',
-                                                             'marginRight': '1rem',
-                                                             'marginTop': '1rem'}),
-                ], id='Map1864', className='pretty_box', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                             'border-radius': '10px',
-                                                             'backgroundColor': '#add8e6',
-                                                             'padding': '.1.5rem',
-                                                             'marginLeft': '1rem',
-                                                             'marginRight': '1rem',
-                                                             'marginTop': '1rem'}),
-                ], id='Else6347', style={'width': '40%'}),
-            ], id='5th row', style={'display': 'flex'}),
-
-        html.Div([
-        html.Div([
-
-           ], id='Iteraction34', style={'width': '5%',
-                                        }, className='pretty_box'),
-        html.Div([
+                dcc.Graph(id='bubble_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                            'border-radius': '10px','backgroundColor': '#add8e6',
+                                            'padding': '.1rem', 'marginLeft': '0.5rem',
+                                            'marginRight': '0.5rem','marginTop': '0.5rem',
+                                            'color': 'Black', 'padding-left': '2%',
+                                            'padding-right': '2%','padding-top': '2%'}, className='pretty_box', ),
+                ], id='Box5', className='pretty_box'),
             html.Div([
-                dcc.Graph(id='heatmap', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                               'border-radius': '10px',
-                                               'backgroundColor': '#add8e6',
-                                               'padding': '.1.5rem',
-                                               'marginLeft': '0.5rem',
-                                               'marginRight': '0.5rem',
-                                               'marginTop': '1rem',
-                                               'color': 'Black',
-                                               'padding-left': '2%',
-                                               'padding-right': '2%',
-                                               'padding-top': '2%'}),
-            ], id='Map12', className= 'pretty_box'),
-                ], id='Else48', style={'width': '90%'}),
-
-        html.Div([
-
-                ], id='Else854', style={'width': '5%'}),
+                html.H4("Analyse the evolution of poverty, crime and Energy indicators",
+                        style={'text-align': 'center','border': '2px solid #096484'}, className='pretty_box'),
+            ], id='Iteraction12', style={'boxShadow': '#e3e3e3 4px 4px 2px','border-radius': '10px',
+                                 'marginLeft': '0.5rem','marginRight': '0.5rem',
+                                 'marginBottom': '0.75rem','color': 'Black'}, className='pretty_box'),
+            html.Div([
+                html.Label('Choose the Year'),
+                slider_year,
+                html.Br(),
+            ], id='Iteraction13', style={'boxShadow': '#e3e3e3 4px 4px 2px','border-radius': '10px',
+                                  'backgroundColor': '#add8e6','padding': '.1rem',
+                                  'marginLeft': '0.5rem','marginRight': '0.5rem',
+                                  'marginBottom': '0.75rem', 'color': 'Black',
+                                  'padding-left': '2%','padding-right': '2%'}, className='pretty_box'),
+                ], id='Iteraction14', style={'width': '40%'}),
             ], id='6th row', style={'display': 'flex'}),
 
+       html.Div([
+        html.Div([], id='Space2', style={'width': '5%'}, className='pretty_box'),
+        html.Div([
+            html.Div([ dcc.Graph(id='heatmap', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                               'border-radius': '10px', 'backgroundColor': '#add8e6',
+                                               'padding': '.1.5rem', 'marginLeft': '0.5rem',
+                                               'marginRight': '0.5rem', 'marginTop': '1rem',
+                                               'color': 'Black','padding-left': '2%',
+                                               'padding-right': '2%','padding-top': '2%'}),
+            ], id='heatmap1', className= 'pretty_box'),
+            ], id='Box6', style={'width': '90%'}),
+
+        html.Div([], id='Space3', style={'width': '5%'}),
+            ], id='7th row', style={'display': 'flex'}),
+
     html.Div([
-        html.H1('Exploratory Space', style={"background-color": "#096484",
-                                                    'color': 'White', 'text-align': 'center'})
-    ], id='7th row', style={'width': '60%', 'padding-left': '20%', 'padding-right': '20%'}, className='pretty_box'),
+        html.H1('Exploratory Space', style={"background-color": "#096484",'color': 'White', 'text-align': 'center'})
+    ], id='8th row', style={'width': '60%', 'padding-left': '20%', 'padding-right': '20%'}, className='pretty_box'),
 
     html.Div([
         html.Div([
@@ -436,50 +397,36 @@ app.layout = html.Div([
             html.Label('Choose the Year'),
             dropdown_year,
             html.Br(),
-           ], id='Iteraction2', style={'width': '10%','boxShadow': '#e3e3e3 4px 4px 2px',
-                                                        'border-radius': '10px',
-                                                        'backgroundColor': '#add8e6',
-                                                        'padding':'.1.5rem',
-                                                        'marginLeft':'0.5rem',
-                                                        'marginRight':'0.5rem',
-                                                        'marginTop': '1rem',
-                                                        'height': '40%',
-                                                       'color': 'Black',
-                                                       'padding-left': '1%',
-                                                       'padding-right': '1%',
-                                                       'padding-top': '2%'
-                                                       }, className='pretty_box'),
+           ], id='Iteraction16', style={'width': '10%','boxShadow': '#e3e3e3 4px 4px 2px',
+                                'border-radius': '10px','backgroundColor': '#add8e6',
+                                'padding':'.1.5rem','marginLeft':'0.5rem',
+                                'marginRight':'0.5rem','marginTop': '1rem',
+                                'height': '40%', 'color': 'Black',
+                                'padding-left': '1%','padding-right': '1%',
+                                'padding-top': '2%'}, className='pretty_box'),
         html.Div([
             html.Div([
-                dcc.Graph(id='pie_graph', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                 'border-radius': '10px',
-                                                 'backgroundColor': '#add8e6',
-                                                 #     'padding':'.1rem',
-                                                  #   'marginLeft':'1rem',
-                                                  #  'marginRight':'1rem',
-                                                     'marginTop': '1rem'
-                                                 }),
-            ], id='Map4', className= 'pretty_box'),
-                ], id='Else3', style={'width': '40%'}),
+                dcc.Graph(id='pie_graph', style={'boxShadow': '#add8e6 4px 4px 2px',
+                                          'border-radius': '10px','backgroundColor': '#add8e6',
+                                          'padding':'.1.5rem','marginLeft':'0.5rem',
+                                          'marginRight':'0.5rem','marginTop': '1rem'}),
+            ], id='pie_graphid', style={'boxShadow': '#add8e6 4px 4px 2px','border-radius': '10px',
+                               'backgroundColor': '#add8e6','padding':'.1.5rem',
+                                'marginLeft':'0.5rem','marginRight':'0.5rem',
+                                'marginTop': '1rem'}, className= 'pretty_box'),
+                ], id='Box7', style={'width': '40%'}),
 
         html.Div([
                 html.Div([
-                    dcc.Graph(id='pie_graph1', style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                     'border-radius': '10px',
-                                                     'backgroundColor': '#add8e6',
-                                                     #     'padding':'.1rem',
-                                                     #    'marginLeft':'1rem',
-                                                     #   'marginRight':'1rem',
-                                                     'marginTop': '1rem'
-                                                     }),
-                ], id='Map5', className='pretty_box',style={'boxShadow': '#e3e3e3 4px 4px 2px',
-                                                        'border-radius': '10px',
-                                                        'backgroundColor': '#add8e6',
-                                                        'padding':'.1.5rem',
-                                                        'marginLeft':'1rem',
-                                                        'marginRight':'1rem',
-                                                        'marginTop': '1rem'}),
-                ], id='Else4', style={'width': '40%'}),
+                dcc.Graph(id='pie_graph1', style={'boxShadow': '#add8e6 4px 4px 2px','border-radius': '10px',
+                                         'backgroundColor': '#add8e6','padding':'.1.5rem',
+                                         'marginLeft':'0.5rem','marginRight':'0.5rem',
+                                         'marginTop': '1rem'}),
+                ], id='pie_graph1id', className='pretty_box', style={'boxShadow': '#e3e3e3 4px 4px 2px',
+                                               'border-radius': '10px', 'backgroundColor': '#add8e6',
+                                               'padding': '.1.5rem','marginLeft': '0.5rem',
+                                               'marginRight': '0.5rem', 'marginTop': '1rem'}),
+                ], id='Box8', style={'width': '40%'}),
         html.Div([
             html.Label('Choose your Country'),
             dropdown_country2,
@@ -487,22 +434,27 @@ app.layout = html.Div([
             html.Label('Choose the Year'),
             dropdown_year1,
             html.Br(),
-            ], id='Iteraction3', style={'width': '10%', 'boxShadow': '#d3d3d3 4px 4px 2px',
-                                    'border-radius': '10px',
-                                    'backgroundColor': '#add8e6',
-                                    'padding': '.1.5rem',
-                                    'marginLeft': '0.5rem',
-                                    'marginRight': '0.5rem',
-                                    'marginTop': '1rem',
-                                    'height': '40%',
-                                    'color': 'Black',
-                                    'padding-left': '1%',
-                                    'padding-right': '1%',
-                                    'padding-top': '2%'
-                                    }, className='pretty_box'),
-            ], id='8th row', style={'display': 'flex'}),
+            ], id='Iteraction17', style={'width': '10%', 'boxShadow': '#d3d3d3 4px 4px 2px',
+                                 'border-radius': '10px', 'backgroundColor': '#add8e6',
+                                 'padding': '.1.5rem','marginLeft': '0.5rem',
+                                 'marginRight': '0.5rem','marginTop': '1rem',
+                                 'height': '40%','color': 'Black','padding-left': '1%',
+                                 'padding-right': '1%','padding-top': '2%'}, className='pretty_box'),
+            ], id='9th row', style={'display': 'flex'}),
 
-        ])
+    html.Div([
+        html.H4('Authors: André Forte (m20210590), Beatriz Ferreira (m20210630), '
+                'Diogo Marques (m20210605) and Rafael Nunes (m20210832)',
+                style={"background-color": "#096484",'color': 'White', 'text-align': 'center'}),
+    ], id='10th row', style={'width': '94%', 'padding-left':'3%', 'padding-right':'3%'},
+        className='pretty_box'),
+
+    html.Div([
+        html.H4('Sources: Numbeo and Eurostat', style={"background-color": "#096484",'color': 'White',
+                                                       'text-align': 'center'}),
+    ], id='11th row', style={ 'width': '20%', 'padding-left':'40%', 'padding-right':'40%'},
+        className='pretty_box')])
+
 
 @app.callback(
     [
@@ -532,7 +484,8 @@ app.layout = html.Div([
 )
 
 def plots( year, indicator, countries, groups,country1, year1, country2, year2, indicator2, country3, year4):
-    ############################################First Plot - Bar##########################################################
+
+    ############################################ Bar Plot - Indicators' Distribution #################################
     data_bar = []
     for country in countries:
         df_bar = df.loc[(df['Country'] == country)]
@@ -548,10 +501,9 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
                       yaxis=dict(title='Value'),
                       xaxis=dict(title='Year'),
                       paper_bgcolor='#add8e6',
-                      plot_bgcolor='#add8e6',
-                                         )
+                      plot_bgcolor='#add8e6')
 
-    #############################################Second Plot - Choropleth######################################################
+    #############################################Choropleth Map - Indicators ##########################################
 
 
     df_choro = df.loc[df['Year'] == year]
@@ -560,7 +512,6 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
 
     data_choropleth = dict(type='choropleth',
                            locations=df_choro['CODE'],
-                           # There are three ways to 'merge' your data with the data pre embedded in the map
                            z=z,
                            text=df_choro['Country'],
                            colorscale='Blues',
@@ -569,106 +520,81 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
                            name=''
                            )
 
-
     layout_choropleth = dict(geo=dict(scope='europe',  # default
-                                      projection=dict(type='equirectangular'
-                                                      ),
-                                      # showland=True,   # default = True
+                                      projection=dict(type='equirectangular'),
                                       landcolor='black',
-                                 #     lakecolor='white',
-                                      showocean=False,  # default = False
-                              #        oceancolor='azure',
-                                      bgcolor='#add8e6',
-
-
-                                      ),
-
+                                      showocean=False,
+                                      bgcolor='#add8e6'),
                              title=dict(
-                                 text='European ' + str(indicator.replace('_', ' ')) + ' Index' + ' Choropleth Map on the year ' + str(year),
-                                 x=.5  # Title relative position according to the xaxis, range (0,1)
-
-                             ),
+                                 text='European ' + str(indicator.replace('_', ' ')) + ' Index'
+                                      + ' Choropleth Map on the year ' + str(year),
+                                 x=.5),
                              title_font_size=15,
-                             paper_bgcolor='#add8e6',
-
-
-                             )
+                             paper_bgcolor='#add8e6')
 
     fig_choro = go.Figure(data=data_choropleth, layout=layout_choropleth)
 
+    fig_choro.update_layout(margin=dict(l=50, r=50, t=50, b=50, pad=4,autoexpand=True))
 
-    fig_choro.update_layout(
-        margin=dict(l=50, r=50, t=50, b=50, pad=4,
-                autoexpand=True))
+    ############################################ Line Plot - Income ##################################################
 
-    ############################################Third Plot - Scatter ######################################################
-
-    data_agg =[]
+    data_line =[]
 
     for country in country3:
-        df_line = table.loc[(table['Country'] == country)]
+        df_line = income.loc[(income['Country'] == country)]
 
         x_line = df_line['Year']
 
         y_line = df_line[groups]
 
-        data_agg.append(dict(type= 'scatter',
+        data_line.append(dict(type= 'scatter',
                                 x=x_line,
                                 y=y_line,
                                 name=country,
-                          #      labels = dict('Group ' + str(groups)),
-                               # text = str(groups), #ADD MORE INFO HERE
-                            mode='lines+markers',
-                                     )
+                            mode='lines+markers')
                                 )
 
-    layout_agg = dict(title=dict(text='Income per Country on year between 2016 and 2020'),
+    layout_line = dict(title=dict(text='Income per Country on year between 2016 and 2020'),
                       title_font_size = 15,
                       yaxis=dict(title='Income'),
                       xaxis=dict(title='Years'),
                       paper_bgcolor='#add8e6',
-                      plot_bgcolor='#add8e6',
+                      plot_bgcolor='#add8e6')
 
-                      )
-
-############################################ Forth Plot - Scatter (Poverty, Crime) ################################
+############################################ Scatter Plot - Comparing Indicators #####################################
 
     scatterplot_list = []
-
 
     for country in countries:
         df_scatter = df.loc[(df['Year'] == year)]
         df_scatter = df_scatter.loc[(df_scatter['Country'] == country)]
 
-        x_line = df_scatter[indicator2]
+        x_scatter = df_scatter[indicator2]
 
-        y_line = df_scatter[indicator]
+        y_scatter = df_scatter[indicator]
 
         scatterplot_list.append(dict(type='scatter',
-                             x=x_line,
-                             y=y_line,
+                             x=x_scatter,
+                             y=y_scatter,
                              name=country,
-                             #      labels = dict('Group ' + str(groups)),
-                             # text = str(groups), #ADD MORE INFO HERE
                              mode='markers',
                              marker_size = 18,
-                             marker_symbol = '219',
-        )
-                        )
+                             marker_symbol = '219')
+                                )
 
-    layout_ag = dict(title=dict(text= str(indicator).replace('_', ' ') + ' vs '+  str(indicator2).replace('_', ' ') + ' in ' + str(year),
+    layout_scatter = dict(title=dict(text= str(indicator).replace('_', ' ') + ' vs '+
+                                           str(indicator2).replace('_', ' ') + ' in ' + str(year),
                                 x=.5),
                       title_font_size=15,
                       yaxis=dict(title=str(indicator).replace('_', ' ')),
                       xaxis=dict(title=str(indicator2).replace('_', ' ')),
                       paper_bgcolor='#add8e6',
                       plot_bgcolor='#add8e6',
-
                       )
 
-    fig_scatterplot = go.Figure(data=scatterplot_list, layout=layout_ag)
+    fig_scatterplot = go.Figure(data=scatterplot_list, layout=layout_scatter)
 
-    ############################################ Fifth Plot - Heatmap #############################################################
+    ############################################ Heatmap - Energy #####################################################
 
     df_heatmap_final = df_heatmap.loc[df_heatmap['Year'] == year4]
 
@@ -686,25 +612,23 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
                        autosize=True,
                        paper_bgcolor='#add8e6',
                        plot_bgcolor='#add8e6',
-                       yaxis=dict(title='Indicators',
-                                  ),
+                       yaxis=dict(title='Indicators',),
                        xaxis = dict(title='Countries',
-                                    tickangle =45,
-                                    )
+                                    tickangle =45,)
                        )
 
     fig_heat = go.Figure(data=data_heat, layout=layout_heat)
 
-    ############################################ Sixth Plot - Bubble Chart #############################################################
+    ###################### Bubble Chart - Poverty, Crime and Population ##############################################
 
-    fig_bubb = go.Figure()
+    fig_bubble = go.Figure()
 
-    df_bubbb = PCP
+    df_bubble = PCP
 
     hover_text = []
     bubble_size = []
 
-    for index, row in df_bubbb.iterrows():
+    for index, row in df_bubble.iterrows():
         hover_text.append(('Country: {Country}<br>' +
                            'Poverty: {Poverty}<br>' +
                            'Crime: {Crime}<br>' +
@@ -716,43 +640,33 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
                                                   Year=row['Year'])),
         bubble_size.append(math.sqrt(row['Population']))
 
-    df_bubbb['text'] = hover_text
-    df_bubbb['size'] = bubble_size
-    sizeref = 2. * max(df_bubbb['size']) / (100 ** 2)
+    df_bubble['text'] = hover_text
+    df_bubble['size'] = bubble_size
+    sizeref = 2. * max(df_bubble['size']) / (100 ** 2)
 
     for country in country3:
-        df_bubb = df_bubbb.loc[(df_bubbb['Country'] == country) & (df_bubbb['Year'] == year4)]
+        bubble = df_bubble.loc[(df_bubble['Country'] == country) & (df_bubble['Year'] == year4)]
 
-        fig_bubb.add_trace(go.Scatter(
-            x=df_bubb['Poverty'], y=df_bubb['Crime'],
+        fig_bubble.add_trace(go.Scatter(
+            x=bubble['Poverty'], y=bubble['Crime'],
             name=country,
-            text=df_bubb['text'],
-            marker_size=df_bubb['size'],
+            text=bubble['text'],
+            marker_size=bubble['size'],
         )),
 
-    # Tune marker appearance and layout
-    fig_bubb.update_traces(mode='markers', marker=dict(sizemode='area', sizeref=sizeref,
-                                                       line_width=2)),
+    fig_bubble.update_traces(mode='markers', marker=dict(sizemode='area', sizeref=sizeref,line_width=2)),
 
-    fig_bubb.update_layout(
-        title= dict(text = 'Poverty vs. Crime',x=.5),
+    fig_bubble.update_layout(
+        title= dict(text = "Comparing Poverty and Crime with Population' analysis",x=.5),
         title_font_size=15,
         xaxis=dict(
-            title='Poverty (by year)',
-            # gridcolor='white',
-            # type='log',
-            # gridwidth=2,
-        ),
-
+            title='Poverty (by year)',),
         yaxis=dict(
-            title='% Crime (by years)',
-            # gridcolor='white',
-            # gridwidth=2,
-        ),
+            title='% Crime (by years)'),
         paper_bgcolor='#add8e6',
         plot_bgcolor='#add8e6',
     )
-    ############################################ Seventh Plot - Pie #############################################################
+    ############################################ Pie Plot - First #####################################################
 
     data_pie = []
 
@@ -765,22 +679,16 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
     data_pie.append(dict(type='pie', labels = labels, values =values, hole = 0.5))
 
     layout_pie = dict(title=dict(text='Education in ' + str(country1) + ' in ' + str(year1),
-                                 x=.5,
-                                 ),
+                                 x=.5,),
                       title_font_size=15,
                       paper_bgcolor='#add8e6',
-                     plot_bgcolor = '#add8e6',
-                      legend=dict(
-                          orientation="h",
-                          yanchor="bottom",
-                          y=1.02,
-                          xanchor="right",
-                          x=1.1
-                      ))
+                      plot_bgcolor = '#add8e6',
+                      legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1.1)
+                      )
 
     fig_pie = go.Figure(data=data_pie, layout=layout_pie)
 
-    ############################################ Eighth Plot - Pie #############################################################
+    ############################################ Pie Plot - Second ###################################################
 
     data_pie1 = []
 
@@ -793,39 +701,29 @@ def plots( year, indicator, countries, groups,country1, year1, country2, year2, 
     data_pie1.append(dict(type='pie', labels=labels1, values=values1, hole=0.5))
 
     layout_pie1 = dict(title=dict(text='Education in ' + str(country2) + ' in ' + str(year2),
-                                 x=.5,
-                                 ),
+                                x=.5),
                        title_font_size=15,
-                      paper_bgcolor='#add8e6',
-                      plot_bgcolor='#add8e6',
-                       legend=dict(
-                           orientation="h",
-                           yanchor="bottom",
-                           y=1.02,
-                           xanchor="right",
-                           x=1.1
-                       ))
+                       paper_bgcolor='#add8e6',
+                       plot_bgcolor='#add8e6',
+                       legend=dict( orientation="h", yanchor="bottom", y=1.02, xanchor="right",  x=1.1)
+                       )
 
     fig_pie1 = go.Figure(data=data_pie1, layout=layout_pie1)
 
-
     return  fig_choro, \
             go.Figure(data=data_bar, layout=layout_bar), \
-            go.Figure(data=data_agg, layout=layout_agg), \
+            go.Figure(data=data_line, layout=layout_line), \
             fig_scatterplot, \
             fig_heat, \
-            fig_bubb, \
+            fig_bubble, \
             fig_pie, \
             fig_pie1
 
 
 @app.callback(
     [
-        Output("kpi1", "children"),
-        Output("kpi2", "children"),
-      #  Output("gas_3", "children"),
-      #  Output("gas_4", "children"),
-      #  Output("gas_5", "children")
+        Output("info1", "children"),
+        Output("info2", "children"),
     ],
     [
         Input("radio_year", "value"),
@@ -846,16 +744,8 @@ def indicator(year, indicator):
         past = df_cards2[indicator].mean()
         value_2 = round(((current-past)/past), 4)
 
-
-   # value_3 = round(df_loc.loc[df_loc['year'] == year][gas_names[2]].values[0], 2)
-   # value_4 = round(df_loc.loc[df_loc['year'] == year][gas_names[3]].values[0], 2)
-   # value_5 = round(df_loc.loc[df_loc['year'] == year][gas_names[4]].values[0], 2)
-
     return str(indicator).replace('_', ' ') + ': ' + str(value_1), \
            str(indicator).replace('_', ' ') + ': ' + str(value_2), \
-          # str(gas_names[2]).replace('_', ' ') + ': ' + str(value_3), \
-          # str(gas_names[3]).replace('_', ' ') + ': ' + str(value_4), \
-          # str(gas_names[4]).replace('_', ' ') + ': ' + str(value_5),
 
 if __name__ == '__main__':
     app.run_server(debug=True)
