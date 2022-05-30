@@ -174,7 +174,7 @@ if options == 'Cryptocurrencies':
 
 #INDICATORS --------------
 
-	def indicators (df, crypto):
+	def indicators (df):
 
 			# Set the short window and long windows
 		short_window = 50
@@ -280,7 +280,7 @@ if options == 'Cryptocurrencies':
 		
 		return df
 
-	data = indicators(df, crypto1)
+	data = indicators(df)
 
 
 	def indicators_plot(data, categories, crypto, date1, date2):
