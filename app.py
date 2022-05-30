@@ -278,7 +278,8 @@ if options == 'Cryptocurrencies':
 		    else:
 		        df['Strategy'][x] = df['Strategy'][x-1]
 		
-		return df
+		
+			return df
 
 	data = indicators(df)
 
