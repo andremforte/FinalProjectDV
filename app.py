@@ -273,13 +273,13 @@ if options == 'Cryptocurrencies':
 		df['Strategy'][15] = df['Adj Close'][15]
 
 		for x in range(16, len(df)):
-		    if df['Long Tomorrow'][x-1] == True:
-		        df['Strategy'][x] = df['Strategy'][x-1]* (df['Adj Close'][x] / df['Adj Close'][x-1])
-		    else:
-		        df['Strategy'][x] = df['Strategy'][x-1]
-		
-		
-			return df
+			if df['Long Tomorrow'][x-1] == True:
+			    df['Strategy'][x] = df['Strategy'][x-1]* (df['Adj Close'][x] / df['Adj Close'][x-1])
+			else:
+			    df['Strategy'][x] = df['Strategy'][x-1]
+
+
+		return df
 
 	data = indicators(df)
 
